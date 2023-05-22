@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const weather = require("../schemas/weather");
 
+//hi
 // 게시판 예시들인데 참고용으로 놔둠
 // router.post("/delete", async (req, res) => {
 //   try {
