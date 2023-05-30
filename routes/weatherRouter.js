@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const weather = require("../schemas/weather");
 
-//hi
 // 게시판 예시들인데 참고용으로 놔둠
 // router.post("/delete", async (req, res) => {
 //   try {
@@ -62,6 +61,47 @@ router.post("/getWeatherList", async (req, res) => {
     // console.log(_date);
     const _weather = await weather.find({date: req.body.date, location_name: req.body.name});
     res.json({ list: _weather });
+    //console.log("성공");
+    //console.log(_weather);
+  } catch (err) {
+    console.log(err);
+    res.json({ message: false });
+  }
+});
+
+//월별 강수량 평균
+router.post("/getDayrain", async (req, res) => {
+    try {
+      // const _name = req.body.name;
+      // console.log(_name);
+      // const _date = req.body.date;
+      // console.log(_date);
+      const _weather = await weather.aggregate([{$match:{location_name: req.body.name, date: {$regex:/2022-05/}}},
+        {$group: {_id: "$date", average:{$avg:"$day_rain"}}},
+        {$group: {_id:null, avg:{$avg: "$average"}}}
+    ]);
+      res.json({ list: _weather });
+      //console.log("성공");
+      //console.log(_weather);
+    } catch (err) {
+      console.log(err);
+      res.json({ message: false });
+    }
+  });
+
+//전국 최저 기온
+router.post("/getMinTemp", async (req, res) => {
+  try {
+    // const _name = req.body.name;
+    // console.log(_name);
+    // const _date = req.body.date;
+    console.log(req.body.date);
+    const _weather = await weather.aggregate([{$match:{date: {$regex:req.body.date}}},
+      {$group: {_id:'$location_name', avg:{$avg:'$temp'}}},
+      {$group: {_id: null, minTemp:{$min:"$avg"}}}
+    
+  ]);
+    res.json({ list: _weather});
     console.log("성공");
     console.log(_weather);
   } catch (err) {
@@ -70,27 +110,66 @@ router.post("/getWeatherList", async (req, res) => {
   }
 });
 
-//월별 강수량 평균 만드는 중. . . .
-router.post("/getDayrain", async (req, res) => {
-    try {
-      // const _name = req.body.name;
-      // console.log(_name);
-      // const _date = req.body.date;
-      // console.log(_date);
-      const _weather = await weather.aggregate({$match:{location_name: req.body.name, date: {$regex:/2022-05/}}},
-        {$group: {_id: req.body.date, average:{$avg:"$day_rain"}}},
-        {$group: {_id:null, avg:{$avg: "$average"}}}
-      );
-      res.json({ list: _weather });
-      console.log("성공");
-      console.log(_weather);
-    } catch (err) {
-      console.log(err);
-      res.json({ message: false });
-    }
-  });
+//전국 최고 기온
+router.post("/getMaxTemp", async (req, res) => {
+  try {
+    // const _name = req.body.name;
+    // console.log(_name);
+    // const _date = req.body.date;
+    console.log(req.body.date);
+    const _weather = await weather.aggregate([{$match:{date: {$regex:req.body.date}}},
+      {$group: {_id:'$location_name', avg:{$avg:'$temp'}}},
+      {$group: {_id: null, maxTemp:{$max:"$avg"}}}
+    
+  ]);
+    res.json({ list: _weather });
+    console.log("성공");
+    console.log(_weather);
+  } catch (err) {
+    console.log(err);
+    res.json({ message: false });
+  }
+});
 
-
+//날씨 비중
+router.post("/getWeatherRate", async (req, res) => {
+  try {
+    // const _name = req.body.name;
+    // console.log(_name);
+    // const _date = req.body.date;
+    console.log(req.body.date);
+    const _weather = await weather.aggregate([
+      {
+        $match: {
+          date: {
+            $regex: req.body.date
+          }
+        }
+      },
+      {
+        $project: {
+          has_day_rain: {
+            $cond: [{ $ifNull: ["$day_rain", false] }, true, false]
+          }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            exists: { $cond: ["$has_day_rain", "Exists", "DoesNotExist"] }
+          },
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+    res.json({ list: _weather });
+    console.log("성공");
+    console.log(_weather);
+  } catch (err) {
+    console.log(err);
+    res.json({ message: false });
+  }
+});
 // router.post("/detail", async (req, res) => {
 //   try {
 //     const _id = req.body._id;
