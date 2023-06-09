@@ -24,5 +24,8 @@ module.exports = () => {
       connect();
 
     require("./weather");
+    require("./traffic");
+    require("./subway");
+    require("./traffic_weather");
 };
 

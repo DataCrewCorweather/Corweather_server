@@ -34,6 +34,9 @@ app.use(express.urlencoded({ extended: true })); //배열 설정을 위함
 // router란? server.js 에서 모든 작업을 하기에는 적절하지 않음
 // 그래서 router로 분리함
 app.use("/weather", require("./routes/weatherRouter"));
+app.use("/traffic", require("./routes/trafficRouter"));
+app.use("/subway", require("./routes/subwayRouter"));
+app.use("/traffic_weather", require("./routes/traffic_weatherRouter"));
 
 
 app.listen(
