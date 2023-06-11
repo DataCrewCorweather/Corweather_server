@@ -76,7 +76,7 @@ router.post("/getDayrain", async (req, res) => {
       // console.log(_name);
       // const _date = req.body.date;
       // console.log(_date);
-      const _weather = await weather.aggregate([{$match:{location_name: req.body.name, date: {$regex:/2022-05/}}},
+      const _weather = await weather.aggregate([{$match:{location_name: req.body.name, date: {$regex:/2022.05/}}},
         {$group: {_id: "$date", average:{$avg:"$day_rain"}}},
         {$group: {_id:null, avg:{$avg: "$average"}}}
     ]);
@@ -102,8 +102,8 @@ router.post("/getMinTemp", async (req, res) => {
     
   ]);
     res.json({ list: _weather});
-    console.log("성공");
-    console.log(_weather);
+    //console.log("성공");
+    //console.log(_weather);
   } catch (err) {
     console.log(err);
     res.json({ message: false });
@@ -123,8 +123,8 @@ router.post("/getMaxTemp", async (req, res) => {
     
   ]);
     res.json({ list: _weather });
-    console.log("성공");
-    console.log(_weather);
+    //console.log("성공");
+    //console.log(_weather);
   } catch (err) {
     console.log(err);
     res.json({ message: false });
@@ -141,29 +141,42 @@ router.post("/getWeatherRate", async (req, res) => {
     const _weather = await weather.aggregate([
       {
         $match: {
-          date: {
-            $regex: req.body.date
-          }
-        }
-      },
-      {
-        $project: {
-          has_day_rain: {
-            $cond: [{ $ifNull: ["$day_rain", false] }, true, false]
-          }
+          date: { $regex: req.body.date }
         }
       },
       {
         $group: {
-          _id: {
-            exists: { $cond: ["$has_day_rain", "Exists", "DoesNotExist"] }
+          _id: null,
+          day_rain_count: {
+            $sum: {
+              $cond: [{ $ifNull: ["$day_rain", false] }, 1, 0]
+            }
           },
-          count: { $sum: 1 }
+          day_snow_count: {
+            $sum: {
+              $cond: [{ $ifNull: ["$snow", false] }, 1, 0]
+            }
+          },
+          day_sunny_count: {
+            $sum: {
+              $cond: [
+                {
+                  $and: [
+                    { $eq: [{ $ifNull: ["$day_rain", null] }, null] },
+                    { $eq: [{ $ifNull: ["$snow", null] }, null] }
+                  ]
+                },
+                1,
+                0
+              ]
+            }
+          }
         }
       }
-    ]);
+    ])
+    
     res.json({ list: _weather });
-    console.log("성공");
+    //console.log("성공");
     console.log(_weather);
   } catch (err) {
     console.log(err);

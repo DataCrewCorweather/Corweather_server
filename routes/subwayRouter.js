@@ -39,7 +39,7 @@ router.post("/getsubAvg", async (req, res) => {
       ])
       res.json({ list: _subway });
       //console.log("성공");
-      console.log(_subway);
+      //console.log(_subway);
     } catch (err) {
       console.log(err);
       res.json({ message: false });

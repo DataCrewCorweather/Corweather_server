@@ -52,7 +52,7 @@ const traffic = require("../schemas/traffic");
 //   }
 // });
 
-// 날씨(온도) 가져오기
+
 router.post("/getTimetraffic", async (req, res) => {
   try {
     // const _name = req.body.name;
@@ -154,7 +154,7 @@ router.post("/getTimetraffic", async (req, res) => {
 });
 
 
-//월별 강수량 평균
+
 router.post("/getMonthavg", async (req, res) => {
     try {
       // const _name = req.body.name;
@@ -183,5 +183,83 @@ router.post("/getMonthavg", async (req, res) => {
       res.json({ message: false });
     }
   });
+
+
+
+router.post("/getDayofweek", async (req, res) => {
+  try {
+    // const _name = req.body.name;
+    // console.log(_name);
+    // const _date = req.body.date;
+    // console.log(_date);
+    const _traffic = await traffic.aggregate([
+      {
+        $group: {
+          _id: { $dayOfWeek: { $dateFromString: { dateString: "$date", format: "%Y.%m.%d" } } },
+          average_all_sum: { $avg: "$all_sum" }
+        }
+      },
+      {
+        $sort: {
+          _id: 1
+        }
+      }
+    ]);
+
+    res.json({ list: _traffic });
+    //console.log("성공");
+    //console.log(_traffic);
+  } catch (err) {
+    console.log(err);
+    res.json({ message: false });
+  }
+});
+
+router.post("/getJoindata", async (req, res) => {
+  try {
+    // const _name = req.body.name;
+    // console.log(_name);
+    // const _date = req.body.date;
+    // console.log(_date);
+    const _traffic = await traffic.aggregate([
+      {
+        $lookup: {
+          from: "traffic_weathers",
+          localField: "date",
+          foreignField: "date",
+          as: "joinedData"
+        }
+      },
+      {
+        $unwind: "$joinedData"
+      },
+      {
+        $match: {
+          road_name: req.body.name,
+          "joinedData.weather": {$regex:req.body.weather}
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          average_all_sum: { $avg: "$all_sum" }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          average_all_sum: 1
+        }
+      }
+    ]);
+
+    res.json({ list: _traffic });
+    console.log("성공");
+    console.log(_traffic);
+  } catch (err) {
+    console.log(err);
+    res.json({ message: false });
+  }
+});
 
 module.exports = router;

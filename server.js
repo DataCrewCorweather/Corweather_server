@@ -37,6 +37,8 @@ app.use("/weather", require("./routes/weatherRouter"));
 app.use("/traffic", require("./routes/trafficRouter"));
 app.use("/subway", require("./routes/subwayRouter"));
 app.use("/traffic_weather", require("./routes/traffic_weatherRouter"));
+app.use("/weather_warning", require("./routes/weather_warningRouter"));
+app.use("/pre_weather", require("./routes/pre_weatherRouter"));
 
 
 app.listen(

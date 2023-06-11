@@ -27,5 +27,7 @@ module.exports = () => {
     require("./traffic");
     require("./subway");
     require("./traffic_weather");
+    require("./weather_warning");
+    require("./pre_weather");
 };
 
